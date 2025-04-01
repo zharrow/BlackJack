@@ -4,7 +4,7 @@ import { gsap } from 'gsap';
 // Sons du jeu (à implémenter avec une bibliothèque comme Howler.js)
 export const playCardSound = () => {
   try {
-    const audio = new Audio('/assets/sounds/card-flip.mp3');
+    const audio = new Audio('/static/sounds/card-flip.mp3');
     audio.volume = 0.5;
     // Jouer le son uniquement après une interaction utilisateur
     const playPromise = audio.play();
@@ -22,7 +22,7 @@ export const playCardSound = () => {
 
 export const playStartSound = () => {
   try {
-    const audio = new Audio('/assets/sounds/start.mp3');
+    const audio = new Audio('/static/sounds/start.mp3');
     audio.volume = 0.5;
     // Jouer le son uniquement après une interaction utilisateur
     const playPromise = audio.play();
@@ -40,7 +40,7 @@ export const playStartSound = () => {
 
 export const playWinSound = () => {
   try {
-    const audio = new Audio('/assets/sounds/win.mp3');
+    const audio = new Audio('/static/sounds/win.mp3');
     audio.volume = 0.5;
     // Jouer le son uniquement après une interaction utilisateur
     const playPromise = audio.play();
@@ -57,21 +57,23 @@ export const playWinSound = () => {
 };
 
 export const playLoseSound = () => {
-  try {
-    const audio = new Audio('/assets/sounds/lose.mp3');
-    audio.volume = 0.5;
-    // Jouer le son uniquement après une interaction utilisateur
-    const playPromise = audio.play();
+  const audio = new Audio('/static/sounds/lose.mp3');
+  audio.volume = 0.5;
+  // try {
+  //   const audio = new Audio('/static/sounds/lose.mp3');
+  //   audio.volume = 0.5;
+  //   // Jouer le son uniquement après une interaction utilisateur
+  //   const playPromise = audio.play();
     
-    // Gérer proprement le rejet de la promesse si l'autoplay est bloqué
-    if (playPromise !== undefined) {
-      playPromise.catch(e => {
-        console.log('Autoplay prevented, need user interaction first');
-      });
-    }
-  } catch (e) {
-    console.log('Sound playback error:', e);
-  }
+  //   // Gérer proprement le rejet de la promesse si l'autoplay est bloqué
+  //   if (playPromise !== undefined) {
+  //     playPromise.catch(e => {
+  //       console.log('Autoplay prevented, need user interaction first');
+  //     });
+  //   }
+  // } catch (e) {
+  //   console.log('Sound playback error:', e);
+  // }
 };
 
 /**
@@ -240,7 +242,7 @@ export function victoryAnimation(container, isBlackjack = false) {
     confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
     confetti.style.width = `${Math.random() * 10 + 5}px`;
     confetti.style.height = `${Math.random() * 6 + 3}px`;
-    confetti.style.opacity = Math.random() + 0.5;
+    confetti.style.opacity = (Math.random() + 0.5).toString();
     confetti.style.position = 'absolute';
     confetti.style.zIndex = '1000';
     
