@@ -406,11 +406,11 @@
     }
     
     .profile-container.left {
-      left: 10px;
+      right: 400px;
     }
     
     .profile-container.right {
-      right: 10px;
+      left: 400px;
     }
     
     .cards-and-score {
