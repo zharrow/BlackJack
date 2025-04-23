@@ -1,29 +1,36 @@
-<script lang="ts">
+<script>
   import { onMount, createEventDispatcher } from 'svelte';
   import { dealCardAnimation, flipCardAnimation } from '../utils/animation';
   import { gsap } from 'gsap';
   
-  // Define card interface
-  interface Card {
-    image: string;
-    value: string;
-    suit: string;
-  }
+  // Props avec JSDoc pour le typage
+  /** @typedef {{ image: string, value: string, suit: string }} Card */
   
-  // Props
-  export let card: Card | null = null;
+  /** @type {Card|null} */
+  export let card = null;
+  /** @type {boolean} */
   export let faceDown = false;
+  /** @type {number} */
   export let index = 0;
+  /** @type {boolean} */
   export let isWinningCard = false;
+  /** @type {boolean} */
   export let isBusted = false;
+  /** @type {boolean} */
   export let isDealer = false;
+  /** @type {number} */
   export let totalCards = 2;
   
   // État interne de la carte
+  /** @type {boolean} */
   let isFlipped = faceDown;
-  let cardElement: HTMLDivElement;
-  let frontFace: HTMLDivElement;
-  let backFace: HTMLDivElement;
+  /** @type {HTMLDivElement} */
+  let cardElement;
+  /** @type {HTMLDivElement} */
+  let frontFace;
+  /** @type {HTMLDivElement} */
+  let backFace;
+  /** @type {boolean} */
   let isInitialized = false;
   
   const dispatch = createEventDispatcher();
@@ -39,7 +46,11 @@
     isInitialized = true;
   });
   
-  // Retourner la carte avec animation
+  /**
+   * Retourne la carte avec animation
+   * @param {boolean} showFace - Si true, montre la face, sinon montre le dos
+   * @returns {gsap.core.Timeline|undefined}
+   */
   export function flip(showFace = true) {
     if (!isInitialized) return;
     

@@ -4,7 +4,10 @@ import { browser } from '$app/environment';
 
 // État initial
 const initialState = {
-  user: null,
+  user: { 
+    isGuest: false,
+    username: ''
+  },
   isAuthenticated: false,
   isGuest: false,
   username: '',
@@ -13,122 +16,178 @@ const initialState = {
 };
 
 function createAuthStore() {
-  // Tenter de charger l'état depuis localStorage au démarrage
-  let storedState = initialState;
-  
-  if (browser) {
-    const stored = localStorage.getItem('authState');
-    if (stored) {
-      try {
-        storedState = JSON.parse(stored);
-      } catch (e) {
-        console.error('Error parsing auth state from localStorage', e);
-      }
-    }
-  }
-  
-  const { subscribe, set, update } = writable(storedState);
-  
-  // Persister l'état dans localStorage quand il change
-  if (browser) {
-    subscribe(state => {
-      localStorage.setItem('authState', JSON.stringify(state));
-    });
-  }
+  const { subscribe, set, update } = writable(initialState);
   
   return {
     subscribe,
     
-    // Pour jouer en tant qu'invité
-    // @ts-ignore
-    setGuest: (username) => {
-      update(state => ({
-        ...state,
-        isGuest: true,
-        isAuthenticated: true,
-        username: username || 'Invité',
-        // @ts-ignore
-        user: { username: username || 'Invité', guest: true },
-        loading: false,
-        error: null
-      }));
+    // Initialiser le store à partir de l'API
+    initialize: async () => {
+      update(state => ({ ...state, loading: true }));
+      
+      try {
+        const response = await fetch('/api/auth/me');
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+          update(state => ({
+            ...state,
+            user: data.user,
+            isAuthenticated: true,
+            isGuest: data.user.isGuest,
+            username: data.user.username,
+            loading: false
+          }));
+        } else {
+          set({ ...initialState, loading: false });
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        set({ ...initialState, loading: false });
+      }
     },
     
-    // Connexion (à connecter à une API réelle plus tard)
-    // @ts-ignore
-    login: async (email, password) => {
+    // Pour jouer en tant qu'invité
+    setGuest: async (username) => {
       update(state => ({ ...state, loading: true, error: null }));
       
       try {
-        // Simuler un appel API (à remplacer par un vrai appel)
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Créer un compte invité temporaire
+        const response = await fetch('/api/auth/guest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username: username || 'Invité' })
+        });
         
-        if (email === 'test@example.com' && password === 'password') {
+        const data = await response.json();
+        
+        if (data.success) {
           update(state => ({
             ...state,
+            isGuest: true,
             isAuthenticated: true,
-            isGuest: false,
-            username: 'Utilisateur Test',
-            // @ts-ignore
-            user: { id: 1, username: 'Utilisateur Test', email, guest: false },
-            loading: false
+            username: data.user.username,
+            user: data.user,
+            loading: false,
+            error: null
           }));
           return true;
         } else {
           update(state => ({
             ...state,
             loading: false,
-            // @ts-ignore
-            error: 'Email ou mot de passe incorrect'
+            error: data.message
           }));
           return false;
         }
       } catch (error) {
+        console.error('Guest login error:', error);
         update(state => ({
           ...state,
           loading: false,
-          // @ts-ignore
-          error: error.message || 'Erreur de connexion'
+          error: 'Erreur lors de la connexion en tant qu\'invité'
         }));
         return false;
       }
     },
     
-    // Inscription (à connecter à une API réelle plus tard)
-    // @ts-ignore
+    // Connexion
+    login: async (email, password) => {
+      update(state => ({ ...state, loading: true, error: null }));
+      
+      try {
+        const response = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          update(state => ({
+            ...state,
+            isAuthenticated: true,
+            isGuest: data.user.isGuest,
+            username: data.user.username,
+            user: data.user,
+            loading: false,
+            error: null
+          }));
+          return true;
+        } else {
+          update(state => ({
+            ...state,
+            loading: false,
+            error: data.message
+          }));
+          return false;
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+        update(state => ({
+          ...state,
+          loading: false,
+          error: 'Erreur lors de la connexion'
+        }));
+        return false;
+      }
+    },
+    
+    // Inscription
     register: async (username, email, password) => {
       update(state => ({ ...state, loading: true, error: null }));
       
       try {
-        // Simuler un appel API (à remplacer par un vrai appel)
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        const response = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, email, password })
+        });
         
-        update(state => ({
-          ...state,
-          isAuthenticated: true,
-          isGuest: false,
-          username,
-          // @ts-ignore
-          user: { id: Math.floor(Math.random() * 1000), username, email, guest: false },
-          loading: false
-        }));
-        return true;
+        const data = await response.json();
+        
+        if (data.success) {
+          update(state => ({
+            ...state,
+            isAuthenticated: true,
+            isGuest: false,
+            username: data.user.username,
+            user: data.user,
+            loading: false,
+            error: null
+          }));
+          return true;
+        } else {
+          update(state => ({
+            ...state,
+            loading: false,
+            error: data.message
+          }));
+          return false;
+        }
       } catch (error) {
+        console.error('Register error:', error);
         update(state => ({
           ...state,
           loading: false,
-          // @ts-ignore
-          error: error.message || 'Erreur lors de l\'inscription'
+          error: 'Erreur lors de l\'inscription'
         }));
         return false;
       }
     },
     
     // Déconnexion
-    logout: () => {
-      set(initialState);
-      if (browser) {
-        localStorage.removeItem('authState');
+    logout: async () => {
+      update(state => ({ ...state, loading: true }));
+      
+      try {
+        await fetch('/api/auth/logout', { method: 'POST' });
+        set(initialState);
+      } catch (error) {
+        console.error('Logout error:', error);
+      } finally {
+        update(state => ({ ...state, loading: false }));
       }
     },
     
@@ -141,6 +200,11 @@ function createAuthStore() {
 
 // Créer et exporter le store
 export const authStore = createAuthStore();
+
+// Initialiser le store au chargement si on est côté navigateur
+if (browser) {
+  authStore.initialize();
+}
 
 // Valeurs dérivées pour faciliter l'accès
 export const isAuthenticated = derived(authStore, $authStore => $authStore.isAuthenticated);

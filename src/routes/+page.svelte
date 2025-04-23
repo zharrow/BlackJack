@@ -92,7 +92,6 @@
 				type="text" 
 				bind:value={username} 
 				placeholder="Entrez votre pseudo"
-				autofocus
 			  />
 			  <button on:click={playAsGuest} class="btn play-btn">Jouer</button>
 			</div>
@@ -120,7 +119,7 @@
 	  <!-- Footer avec mentions légales et version -->
 	  <div class="footer">
 		<p>© 2025 Blackjack · Version 1.0.0</p>
-		<p>Tous droits réservés · <a href="#">Conditions d'utilisation</a></p>
+		<p>Tous droits réservés · <a href="">Conditions d'utilisation</a></p>
 	  </div>
 	</div>
   </div>

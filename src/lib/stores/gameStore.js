@@ -1,6 +1,6 @@
 import { writable, derived } from 'svelte/store';
-// @ts-ignore
 import * as cardService from '../services/cardService';
+import { statsStore } from './statsStore';
 
 // État initial du jeu
 const initialState = {
@@ -10,31 +10,28 @@ const initialState = {
   dealerHand: [],
   gameStatus: 'idle', // 'idle', 'playing', 'playerWin', 'dealerWin', 'push', 'playerBlackjack', 'playerBust', 'dealerBust'
   isPlayerTurn: true,
-  message: 'Bienvenue au Blackjack! Cliquez sur "Nouvelle partie" pour commencer.',
+  title: 'Bienvenue au Blackjack!',
+  message: 'Cliquez sur "Nouvelle Partie" pour commencer.',
   isLoading: false
 };
 
 // Créer le store
 const createGameStore = () => {
-  // @ts-ignore
   const { subscribe, set, update } = writable(initialState);
   
   // Fonction pour gérer le tour du croupier
   const dealerPlay = async () => {
     let state;
-    update(s => { state = s; return { ...s, isLoading: true, message: 'Le croupier joue...' }; });
+    update(s => { state = s; return { ...s, isLoading: true, title: 'Le croupier joue...' }; });
     
     console.log('Dealer play started', state);
     try {
-      // @ts-ignore
       let dealerHand = [...state.dealerHand];
       let { value: dealerValue } = cardService.calculateHandValue(dealerHand);
-      // @ts-ignore
       let { value: playerValue } = cardService.calculateHandValue(state.playerHand);
       
       // Le croupier tire jusqu'à 17 ou plus
       while (dealerValue < 17) {
-        // @ts-ignore
         const result = await cardService.drawCards(state.deckId, 1);
         const newCard = result.cards[0];
         
@@ -43,10 +40,10 @@ const createGameStore = () => {
         
         update(s => ({
           ...s,
-          // @ts-ignore
           dealerHand,
           remainingCards: result.remaining,
-          message: `Le croupier tire ${newCard.value} de ${newCard.suit.toLowerCase()}. Sa main vaut ${dealerValue}.`
+          title: `Le croupier tire ${newCard.value} de ${newCard.suit.toLowerCase()}.`,
+          message: `Sa main vaut ${dealerValue}.`
         }));
         
         // Pause pour l'animation
@@ -55,20 +52,46 @@ const createGameStore = () => {
       
       // Déterminer le résultat
       let gameStatus;
+      let title;
       let message;
+
       
       if (dealerValue > 21) {
         gameStatus = 'dealerBust';
-        message = `Le croupier dépasse 21 avec ${dealerValue}. Vous gagnez!`;
+        title ='Vous gagnez!';
+        message = `Le croupier dépasse 21 avec ${dealerValue}.`;
+        
+        // Mettre à jour les statistiques
+        setTimeout(() => {
+          statsStore.updateStats('win', playerValue, dealerValue);
+        }, 1000);
       } else if (dealerValue > playerValue) {
         gameStatus = 'dealerWin';
+        title = 'Le croupier gagne!';
         message = `Le croupier gagne avec ${dealerValue} contre votre ${playerValue}.`;
+        
+        // Mettre à jour les statistiques
+        setTimeout(() => {
+          statsStore.updateStats('loss', playerValue, dealerValue);
+        }, 1000);
       } else if (dealerValue < playerValue) {
         gameStatus = 'playerWin';
+        title = 'Vous gagnez!';
         message = `Vous gagnez avec ${playerValue} contre ${dealerValue} pour le croupier!`;
+        
+        // Mettre à jour les statistiques
+        setTimeout(() => {
+          statsStore.updateStats('win', playerValue, dealerValue);
+        }, 1000);
       } else {
         gameStatus = 'push';
+        title = 'Égalité!';
         message = `Égalité! Vous avez tous les deux ${playerValue}.`;
+        
+        // Mettre à jour les statistiques
+        setTimeout(() => {
+          statsStore.updateStats('tie', playerValue, dealerValue);
+        }, 1000);
       }
       
       update(s => ({
@@ -82,14 +105,12 @@ const createGameStore = () => {
       update(s => ({
         ...s,
         isLoading: false,
-        // @ts-ignore
         message: `Erreur: ${error.message}`
       }));
     }
   };
   
   // Fonction pour gérer la distribution initiale des cartes
-  // @ts-ignore
   const dealInitialCards = async (deckId) => {
     try {
       // Tirer 2 cartes pour le joueur et 2 pour le croupier
@@ -99,33 +120,49 @@ const createGameStore = () => {
       const dealerHand = [result.cards[1], result.cards[3]];
       
       const { value: playerValue, isBlackjack: playerBlackjack } = cardService.calculateHandValue(playerHand);
-      // @ts-ignore
       const { value: dealerValue, isBlackjack: dealerBlackjack } = cardService.calculateHandValue(dealerHand);
       
       let gameStatus = 'playing';
-      let message = `Vos cartes valent ${playerValue}. La carte visible du croupier est ${dealerHand[0].value}.`;
+      let title = `Vos cartes valent ${playerValue}.`;
+      let message = ` La carte visible du croupier est ${dealerHand[0].value}.`;
       let isPlayerTurn = true;
       
       // Vérifier le blackjack
       if (playerBlackjack && dealerBlackjack) {
         gameStatus = 'push';
+        title = 'Égalité!';
         message = 'Vous avez tous les deux un Blackjack! C\'est une égalité!';
         isPlayerTurn = false;
+        
+        // Mettre à jour les statistiques
+        setTimeout(() => {
+          statsStore.updateStats('tie', playerValue, dealerValue);
+        }, 1000);
       } else if (playerBlackjack) {
         gameStatus = 'playerBlackjack';
-        message = 'Blackjack! Vous gagnez 3:2!';
+        title = 'Blackjack!';
+        message = 'Vous gagnez 3:2!';
         isPlayerTurn = false;
+        
+        // Mettre à jour les statistiques
+        setTimeout(() => {
+          statsStore.updateStats('blackjack', playerValue, dealerValue);
+        }, 1000);
       } else if (dealerBlackjack) {
         gameStatus = 'dealerWin';
-        message = 'Le croupier a un Blackjack! Vous avez perdu.';
+        title = 'Le croupier a un Blackjack!';
+        message = 'Vous avez perdu.';
         isPlayerTurn = false;
+        
+        // Mettre à jour les statistiques
+        setTimeout(() => {
+          statsStore.updateStats('loss', playerValue, dealerValue);
+        }, 1000);
       }
       
       update(state => ({
         ...state,
-        // @ts-ignore
         playerHand,
-        // @ts-ignore
         dealerHand,
         remainingCards: result.remaining,
         gameStatus,
@@ -138,7 +175,6 @@ const createGameStore = () => {
       update(state => ({
         ...state,
         isLoading: false,
-        // @ts-ignore
         message: `Erreur: ${error.message}`
       }));
     }
@@ -173,7 +209,6 @@ const createGameStore = () => {
         update(state => ({
           ...state,
           isLoading: false,
-          // @ts-ignore
           message: `Erreur: ${error.message}`
         }));
       }
@@ -192,11 +227,9 @@ const createGameStore = () => {
         let state;
         update(s => { state = s; return s; });
         
-        // @ts-ignore
         const result = await cardService.drawCards(state.deckId, 1);
         const newCard = result.cards[0];
         
-        // @ts-ignore
         update(state => {
           const updatedPlayerHand = [...state.playerHand, newCard];
           const { value: handValue } = cardService.calculateHandValue(updatedPlayerHand);
@@ -208,6 +241,11 @@ const createGameStore = () => {
           if (handValue > 21) {
             newGameStatus = 'playerBust';
             newMessage = `Vous avez dépassé 21 avec ${handValue}. Vous avez perdu!`;
+            
+            // Mettre à jour les statistiques avec le résultat "bust"
+            setTimeout(() => {
+              statsStore.updateStats('bust', handValue, 0);
+            }, 1000);
           }
           
           return {
@@ -225,7 +263,6 @@ const createGameStore = () => {
         state = null;
         update(s => { state = s; return s; });
         
-        // @ts-ignore
         if (state.gameStatus === 'playerBust') {
           setTimeout(() => {
             update(s => ({ ...s, isPlayerTurn: false }));
@@ -235,7 +272,6 @@ const createGameStore = () => {
         update(state => ({
           ...state,
           isLoading: false,
-          // @ts-ignore
           message: `Erreur: ${error.message}`
         }));
       }
@@ -259,7 +295,9 @@ const createGameStore = () => {
       setTimeout(dealerPlay, 1000);
     },
   };
+  
 };
+
 
 // Créer et exporter le store
 export const gameStore = createGameStore();

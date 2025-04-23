@@ -73,7 +73,7 @@
   
           stats.player.wins++;
           stats.dealer.losses++;
-          showGameNotification("Victoire !", $gameStore.message, "success");
+          // showGameNotification("Victoire !", $gameStore.message, "success");
           
           // Déterminer l'effet spécial à afficher
           currentEffect = $gameStore.gameStatus === 'playerBlackjack' ? 'blackjack' : 'win';
@@ -84,14 +84,14 @@
   
           stats.dealer.wins++;
           stats.player.losses++;
-          showGameNotification("Défaite", $gameStore.message, "error");
+          // showGameNotification("Défaite", $gameStore.message, "error");
           
           // Déterminer l'effet spécial à afficher
           currentEffect = $gameStore.gameStatus === 'playerBust' ? 'bust' : 'lose';
           
         } else if ($gameStore.gameStatus === 'push') {
           playWinSound();
-          showGameNotification("Égalité", $gameStore.message, "info");
+          // showGameNotification("Égalité", $gameStore.message, "info");
           currentEffect = 'draw';
         }
         
@@ -651,7 +651,8 @@
     }
     
     .message {
-      font-weight: 500;
+      font-size: 1.4em;
+      font-weight: 600;
       margin-bottom: 0.5rem;
       letter-spacing: 0.5px;
     }

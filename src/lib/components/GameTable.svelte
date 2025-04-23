@@ -46,7 +46,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      height: 100vh;
+      height: 90vh;
       width: 100%;
       background: #0a3a1c;
       overflow: hidden;

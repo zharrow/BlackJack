@@ -4,7 +4,6 @@
     import { fade, fly } from 'svelte/transition';
     import { goto } from '$app/navigation';
     
-    /** @type {{ user?: { isGuest: boolean, username: string }, path?: string }} */
     export let data;
     
     let showMenu = false;
