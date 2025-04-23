@@ -1,8 +1,5 @@
 {
     "buildCommand": "npm run build",
-    "installCommand": "npm install",
-    "framework": "sveltekit",
-    "buildEnvironment": {
-      "PRISMA_SKIP_POSTINSTALL_GENERATE": "true"
-    }
+    "installCommand": "npm install && npx prisma generate",
+    "framework": "sveltekit"
   }
