@@ -237,6 +237,8 @@
     }
     
     .forgot-password {
+      border: none;
+      background: none;
       color: rgba(255, 255, 255, 0.7);
       text-decoration: none;
       transition: color 0.2s;

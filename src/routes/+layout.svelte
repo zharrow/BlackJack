@@ -1,5 +1,6 @@
 <script>
     import { authStore } from '$lib/stores/authStore';
+    import { preloadAllSounds } from '$lib/utils/soundManager';
     import { onMount } from 'svelte';
     import { fade, fly } from 'svelte/transition';
     import { goto } from '$app/navigation';
@@ -20,7 +21,16 @@
     
     onMount(() => {
       loaded = true;
+      // L'utilisateur doit interagir avec la page avant que les sons ne fonctionnent
+      const handleFirstInteraction = () => {
+        preloadAllSounds();
+        document.removeEventListener('click', handleFirstInteraction);
+      };
+      // On attend que l'utilisateur clique sur la page pour charger les sons
+      // Cela permet de respecter les règles de lecture automatique des navigateurs
+      document.addEventListener('click', handleFirstInteraction);
     });
+
     
     function toggleMenu() {
       showMenu = !showMenu;
@@ -277,6 +287,8 @@
       flex: 1;
       display: flex;
       flex-direction: column;
+	  justify-content: center;
+	  align-items: center;
     }
     
     footer {

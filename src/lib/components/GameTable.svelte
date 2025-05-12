@@ -25,7 +25,6 @@
     <div class="table-divider bottom"></div>
     
     <div class="dealer-position">
-      <!-- Mot "DEALER" supprimé -->
       <slot name="dealer"></slot>
     </div>
     
@@ -35,8 +34,6 @@
     
     <div class="player-position">
       <slot name="player"></slot>
-      <!-- Mot "JOUEUR" conservé car il est en bas -->
-      <div class="position-marker">JOUEUR</div>
     </div>
   </div>
   

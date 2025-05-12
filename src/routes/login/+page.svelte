@@ -39,6 +39,13 @@
   function goBack() {
     goto('/');
   }
+  
+  function forgetPassword() {
+    // Implement password recovery logic or navigate to password reset page
+    goto('/reset-password');
+    // Alternatively, you could set a message like:
+    // errorMessage = "La fonctionnalité de récupération de mot de passe sera bientôt disponible.";
+  }
 </script>
 
 <div class="login-card" in:fade={{ duration: 300 }}>
@@ -81,7 +88,7 @@
         Se souvenir de moi
       </label>
       
-      <a href="#" class="forgot-password">Mot de passe oublié ?</a>
+      <button on:click={() => forgetPassword()} class="forgot-password">Mot de passe oublié ?</button>
     </div>
     
     <button type="submit" class="login-button" disabled={isLoading}>
@@ -237,6 +244,9 @@
   }
   
   .forgot-password {
+    border: none;
+    background: none;
+    cursor: pointer;
     color: rgba(255, 255, 255, 0.7);
     text-decoration: none;
     transition: color 0.2s;

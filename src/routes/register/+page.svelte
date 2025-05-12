@@ -80,7 +80,7 @@
         id="username" 
         bind:value={username} 
         disabled={isLoading} 
-        placeholder="VotreNom"
+        placeholder="Dark Vador"
         autocomplete="username"
       />
     </div>
@@ -92,7 +92,7 @@
         id="email" 
         bind:value={email} 
         disabled={isLoading} 
-        placeholder="votre@email.com"
+        placeholder="anakin@skywalker.com"
         autocomplete="email"
       />
     </div>

@@ -1,4 +1,5 @@
 <script>
+    import { settings } from '$lib/stores/settingsStore';
     import { onMount, onDestroy } from 'svelte';
     import { gameStore, playerHandValue, dealerHandValue, isGameOver, canHit, canStand } from '../../lib/stores/gameStore';
     import { authStore } from '$lib/stores/authStore';
@@ -386,6 +387,19 @@
         </div>
       </div>
     </div>
+
+    <div class="game-controls">
+      <!-- Autres contrôles... -->
+      
+      <button class="sound-toggle" on:click={() => $settings.soundEnabled = !$settings.soundEnabled}>
+        {#if $settings.soundEnabled}
+          🔊 Son activé
+        {:else}
+          🔇 Son désactivé
+        {/if}
+      </button>
+    </div>
+
   </GameTable>
   
   <style>
@@ -406,11 +420,13 @@
     }
     
     .profile-container.left {
-      right: 400px;
+      right: 300px;
+      top: 0;
     }
     
     .profile-container.right {
-      left: 400px;
+      left: 330px;
+      top: 190px;
     }
     
     .cards-and-score {
